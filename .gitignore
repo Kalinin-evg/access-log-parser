@@ -3,4 +3,3 @@ out/
 *.iml
 pom.xml
 .mvn/
-target/
