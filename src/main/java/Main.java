@@ -18,7 +18,7 @@ public class Main {
             boolean isDirectory = file.isDirectory();
 
             if (!fileExists) {
-                System.out.println("Файл не найден.Введите корректное имя файла и нажмите <Enter>.");
+                System.out.println("Файл не найден. Введите корректное имя файла и нажмите <Enter>.");
                 continue;
             } else if (isDirectory) {
                 System.out.println("Указанный путь ведёт к папке, а не к файлу. Попробуйте снова.");
@@ -26,31 +26,23 @@ public class Main {
             } else {
                 correctFileCount++;
                 System.out.println("Путь указан верно");
-                System.out.println("Количество вернных вводов " + correctFileCount);
-                int totalLines = 0;
-                int googlebotCount = 0;
-                int yandexbotCount = 0;
-                try {
-                    FileReader fileReader = new FileReader(path);
-                    BufferedReader reader = new BufferedReader(fileReader);
+                System.out.println("Количество верных вводов: " + correctFileCount);
+
+                Statistics stats = new Statistics();
+
+                try (BufferedReader reader = new BufferedReader(new FileReader(path))) {
                     String line;
                     while ((line = reader.readLine()) != null) {
                         int length = line.length();
-                        totalLines++;
-
                         if (length > 1024) {
                             throw new LineTooLongException("Строка слишком длинная: " + length + " символов. Максимум 1024.");
                         }
 
-                        String userAgent = extractUserAgent(line);
-                        if (userAgent != null) {
-                            String uaLower = userAgent.toLowerCase();
-                            if (uaLower.contains("googlebot")) {
-                                googlebotCount++;
-                            }
-                            if (uaLower.contains("yandexbot")) {
-                                yandexbotCount++;
-                            }
+                        try {
+                            LogEntry entry = new LogEntry(line);
+                            stats.addEntry(entry);
+                        } catch (IllegalArgumentException e) {
+                            System.out.println("Не удалось распарсить строку: " + e.getMessage());
                         }
                     }
                 } catch (LineTooLongException e) {
@@ -59,25 +51,13 @@ public class Main {
                     System.out.println("Ошибка чтения файла: " + e.getMessage());
                 }
 
-                System.out.println("Общее количество строк: " + totalLines);
-                if (totalLines > 0) {
-                    double googlebotShare = (double) googlebotCount / totalLines * 100;
-                    double yandexbotShare = (double) yandexbotCount / totalLines * 100;
-                    System.out.printf("Доля запросов от Googlebot: %.2f%%%n", googlebotShare);
-                    System.out.printf("Доля запросов от YandexBot: %.2f%%%n", yandexbotShare);
-                } else {
-                    System.out.println("Файл пуст или не содержит строк.");
-                }
+                System.out.println("Общее количество строк: " + stats.getTotalLines());
+                System.out.printf("Доля запросов от Googlebot: %.2f%%%n", stats.getGooglebotShare());
+                System.out.printf("Доля запросов от YandexBot: %.2f%%%n", stats.getYandexbotShare());
+                System.out.println("Общий трафик (байт): " + stats.getTotalTraffic());
+                System.out.printf("Средний трафик в час (байт/час): %.2f%n", stats.getTrafficRate());
+
             }
         }
     }
-    private static String extractUserAgent(String line) {
-        int start = line.lastIndexOf('"');
-        int end = line.lastIndexOf('"', start - 1);
-        if (start != -1 && end != -1 && start > end) {
-            return line.substring(end + 1, start);
-        }
-        return null;
-    }
 }
-
