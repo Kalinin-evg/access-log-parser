@@ -79,6 +79,26 @@ public class Main {
                     }
                 }
 
+                List<String> notFoundPages = stats.getNotExistingPages();
+                System.out.println("\nСписок всех несуществующих страниц (уникальные URL с кодом 404):");
+                if (notFoundPages.isEmpty()) {
+                    System.out.println("  Нет уникальных URL с кодом 404.");
+                } else {
+                    for (String page : notFoundPages) {
+                        System.out.println("  - " + page);
+                    }
+                }
+
+                HashMap<String, Double> browserShares = stats.getBrowserShareStatistics();
+                System.out.println("\nСтатистика браузеров (доли от 0 до 1):");
+                if (browserShares.isEmpty()) {
+                    System.out.println("  Нет данных по браузерам.");
+                } else {
+                    for (String browser : browserShares.keySet()) {
+                        System.out.printf("  - %s: %.4f%n", browser, browserShares.get(browser));
+                    }
+                }
+
             }
         }
     }

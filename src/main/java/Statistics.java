@@ -9,8 +9,10 @@ public class Statistics {
     private long totalTraffic = 0;
     private int googlebotCount = 0;
     private int yandexBotCount = 0;
-    private HashSet<String> pages = new HashSet<>();  // Для уникальных страниц с кодом 200
-    private HashMap<String, Integer> osStats = new HashMap<>();  // Для подсчёта частоты ОС
+    private HashSet<String> pages = new HashSet<>();
+    private HashMap<String, Integer> osStats = new HashMap<>();
+    private HashSet<String> notFoundPages = new HashSet<>();
+    private HashMap<String, Integer> browserStats = new HashMap<>();
 
     public void addEntry(LogEntry entry) {
         entries.add(entry);
@@ -23,7 +25,6 @@ public class Statistics {
         if (uaLower.contains("yandexbot")) {
             yandexBotCount++;
         }
-
         if (entry.getResponseCode() == 200) {
             String request = entry.getRequest();
             String url = extractUrlFromRequest(request);
@@ -31,9 +32,18 @@ public class Statistics {
                 pages.add(url);
             }
         }
-
         String os = extractOsFromUserAgent(entry.getUserAgent());
         osStats.put(os, osStats.getOrDefault(os, 0) + 1);
+
+        if (entry.getResponseCode() == 404) {
+            String request = entry.getRequest();
+            String url = extractUrlFromRequest(request);
+            if (url != null) {
+                notFoundPages.add(url);
+            }
+        }
+        String browser = extractBrowserFromUserAgent(entry.getUserAgent());
+        browserStats.put(browser, browserStats.getOrDefault(browser, 0) + 1);
     }
 
     private String extractUrlFromRequest(String request) {
@@ -52,6 +62,19 @@ public class Statistics {
         if (uaLower.contains("mac")) return "Mac OS";
         if (uaLower.contains("android")) return "Android";
         if (uaLower.contains("ios") || uaLower.contains("iphone") || uaLower.contains("ipad")) return "iOS";
+        return "Other";
+    }
+
+    private String extractBrowserFromUserAgent(String userAgent) {
+        if (userAgent == null) return "Other";
+        String uaLower = userAgent.toLowerCase();
+        if (uaLower.contains("chrome") && !uaLower.contains("edg")) return "Chrome";
+        if (uaLower.contains("firefox")) return "Firefox";
+        if (uaLower.contains("safari") && !uaLower.contains("chrome")) return "Safari";
+        if (uaLower.contains("edg")) return "Edge";
+        if (uaLower.contains("opera")) return "Opera";
+        if (uaLower.contains("msie") || uaLower.contains("trident")) return "Internet Explorer";
+
         return "Other";
     }
 
@@ -85,7 +108,6 @@ public class Statistics {
         double hours = seconds / 3600.0;
         return totalTraffic / hours;
     }
-
     public List<String> getExistingPages() {
         return new ArrayList<>(pages);
     }
@@ -104,5 +126,25 @@ public class Statistics {
         }
 
         return osShares;
+    }
+
+    public List<String> getNotExistingPages() {
+        return new ArrayList<>(notFoundPages);
+    }
+
+    public HashMap<String, Double> getBrowserShareStatistics() {
+        HashMap<String, Double> browserShares = new HashMap<>();
+        int totalBrowserEntries = browserStats.values().stream().mapToInt(Integer::intValue).sum();
+
+        if (totalBrowserEntries == 0) {
+            return browserShares;
+        }
+
+        for (Map.Entry<String, Integer> entry : browserStats.entrySet()) {
+            double share = (double) entry.getValue() / totalBrowserEntries;
+            browserShares.put(entry.getKey(), share);
+        }
+
+        return browserShares;
     }
 }
