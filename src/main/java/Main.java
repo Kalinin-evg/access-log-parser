@@ -3,6 +3,8 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.util.List;
+import java.util.HashMap;
 
 public class Main {
     public static void main(String[] args) {
@@ -56,6 +58,26 @@ public class Main {
                 System.out.printf("Доля запросов от YandexBot: %.2f%%%n", stats.getYandexbotShare());
                 System.out.println("Общий трафик (байт): " + stats.getTotalTraffic());
                 System.out.printf("Средний трафик в час (байт/час): %.2f%n", stats.getTrafficRate());
+
+                List<String> pages = stats.getExistingPages();
+                System.out.println("\nСписок всех существующих страниц (уникальные URL):");  // ОБНОВЛЕНО: убрал "с кодом 200"
+                if (pages.isEmpty()) {
+                    System.out.println("  Нет уникальных URL.");  // ОБНОВЛЕНО: убрал "с кодом 200"
+                } else {
+                    for (String page : pages) {
+                        System.out.println("  - " + page);
+                    }
+                }
+
+                HashMap<String, Double> osShares = stats.getOsShareStatistics();
+                System.out.println("\nСтатистика операционных систем (доли от 0 до 1):");
+                if (osShares.isEmpty()) {
+                    System.out.println("  Нет данных по ОС.");
+                } else {
+                    for (String os : osShares.keySet()) {
+                        System.out.printf("  - %s: %.4f%n", os, osShares.get(os));
+                    }
+                }
 
             }
         }
