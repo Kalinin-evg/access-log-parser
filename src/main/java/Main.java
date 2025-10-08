@@ -58,11 +58,14 @@ public class Main {
                 System.out.printf("Доля запросов от YandexBot: %.2f%%%n", stats.getYandexbotShare());
                 System.out.println("Общий трафик (байт): " + stats.getTotalTraffic());
                 System.out.printf("Средний трафик в час (байт/час): %.2f%n", stats.getTrafficRate());
+                System.out.printf("Среднее количество посещений не-ботов в час: %.2f%n", stats.getAverageVisitsPerHour());
+                System.out.printf("Среднее количество ошибочных запросов в час: %.2f%n", stats.getAverageErrorsPerHour());
+                System.out.printf("Средняя посещаемость одним пользователем (не-боты): %.2f%n", stats.getAverageVisitsPerUser());
 
                 List<String> pages = stats.getExistingPages();
-                System.out.println("\nСписок всех существующих страниц (уникальные URL):");  // ОБНОВЛЕНО: убрал "с кодом 200"
+                System.out.println("\nСписок всех существующих страниц (уникальные URL):");
                 if (pages.isEmpty()) {
-                    System.out.println("  Нет уникальных URL.");  // ОБНОВЛЕНО: убрал "с кодом 200"
+                    System.out.println("  Нет уникальных URL.");
                 } else {
                     for (String page : pages) {
                         System.out.println("  - " + page);
