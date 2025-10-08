@@ -11,28 +11,25 @@ public class LogEntry {
     private String referer;
     private String userAgent;
 
-
     public LogEntry(String line) {
-        String[] parts = line.split(" ");
-        if (parts.length < 12) {
-            throw new IllegalArgumentException("Некорректный формат строки лога");
+        String regex = "^(\\S+) \\S+ \\S+ \\[([^\\]]+)\\] \"([^\"]+)\" (\\d+) (\\d+|\\-) \"([^\"]+)\" \"([^\"]+)\".*$";
+        java.util.regex.Pattern pattern = java.util.regex.Pattern.compile(regex);
+        java.util.regex.Matcher matcher = pattern.matcher(line);
+
+        if (!matcher.matches()) {
+            throw new IllegalArgumentException("Некорректный формат строки лога: " + line);
         }
-        this.ip = parts[0];
-        this.timestamp = parseTimestamp(parts[3] + " " + parts[4]);
-        this.request = parts[5] + " " + parts[6] + " " + parts[7];
-        this.responseCode = Integer.parseInt(parts[8]);
-        this.bytes = parts[9].equals("-") ? 0 : Long.parseLong(parts[9]);
-        this.referer = parts[10];
-        this.userAgent = line.substring(line.indexOf("\"", line.indexOf("\"", line.indexOf("\"") + 1) + 1) + 1);
+
+        this.ip = matcher.group(1);
+        this.timestamp = parseTimestamp(matcher.group(2));
+        this.request = matcher.group(3);
+        this.responseCode = Integer.parseInt(matcher.group(4));
+        this.bytes = matcher.group(5).equals("-") ? 0 : Long.parseLong(matcher.group(5));
+        this.referer = matcher.group(6);
+        this.userAgent = matcher.group(7);
     }
 
-
     private OffsetDateTime parseTimestamp(String timestampStr) {
-
-        if (timestampStr.startsWith("[") && timestampStr.endsWith("]")) {
-            timestampStr = timestampStr.substring(1, timestampStr.length() - 1);
-        }
-
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MMM/yyyy:HH:mm:ss Z", Locale.ENGLISH);
         return OffsetDateTime.parse(timestampStr, formatter);
     }

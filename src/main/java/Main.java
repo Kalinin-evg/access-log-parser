@@ -61,7 +61,19 @@ public class Main {
                 System.out.printf("Среднее количество посещений не-ботов в час: %.2f%n", stats.getAverageVisitsPerHour());
                 System.out.printf("Среднее количество ошибочных запросов в час: %.2f%n", stats.getAverageErrorsPerHour());
                 System.out.printf("Средняя посещаемость одним пользователем (не-боты): %.2f%n", stats.getAverageVisitsPerUser());
+                System.out.println("Пиковая посещаемость в секунду (не-боты): " + stats.getPeakVisitsPerSecond());
 
+                List<String> refererDomains = stats.getRefererDomains();
+                System.out.println("\nСписок доменов, со страниц которых есть ссылки на сайт:");
+                if (refererDomains.isEmpty()) {
+                    System.out.println("  Нет данных по referer.");
+                } else {
+                    for (String domain : refererDomains) {
+                        System.out.println("  - " + domain);
+                    }
+                }
+
+                System.out.println("Максимальная посещаемость одним пользователем (не-боты): " + stats.getMaxVisitsPerUser());
                 List<String> pages = stats.getExistingPages();
                 System.out.println("\nСписок всех существующих страниц (уникальные URL):");
                 if (pages.isEmpty()) {
@@ -72,7 +84,7 @@ public class Main {
                     }
                 }
 
-                HashMap<String, Double> osShares = stats.getOsShareStatistics();
+                HashMap<String, Double> osShares = new HashMap<>(stats.getOsShareStatistics());
                 System.out.println("\nСтатистика операционных систем (доли от 0 до 1):");
                 if (osShares.isEmpty()) {
                     System.out.println("  Нет данных по ОС.");
@@ -92,7 +104,7 @@ public class Main {
                     }
                 }
 
-                HashMap<String, Double> browserShares = stats.getBrowserShareStatistics();
+                HashMap<String, Double> browserShares = new HashMap<>(stats.getBrowserShareStatistics());
                 System.out.println("\nСтатистика браузеров (доли от 0 до 1):");
                 if (browserShares.isEmpty()) {
                     System.out.println("  Нет данных по браузерам.");
